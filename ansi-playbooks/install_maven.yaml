@@ -1,0 +1,28 @@
+---
+- name: Install Maven on Ansible Controller and Client
+  hosts:
+    - localhost  # For the Ansible Controller (local machine)
+    - client     # For the client machine(s)
+  become: true  # Run commands with sudo privileges
+  tasks:
+
+    - name: Update dnf cache
+      dnf:
+        name: '*'
+        state: latest
+        update_cache: yes
+
+    - name: Install Maven on the system
+      dnf:
+        name: maven
+        state: present
+        update_cache: yes
+
+    - name: Verify Maven installation
+      command: mvn -version
+      register: maven_version
+      changed_when: false
+
+    - name: Print Maven version
+      debug:
+        msg: "Maven version installed: {{ maven_version.stdout }}"

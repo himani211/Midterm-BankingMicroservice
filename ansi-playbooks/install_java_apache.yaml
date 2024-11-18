@@ -1,0 +1,24 @@
+---
+- name: Install Java and Apache on Production Server
+  hosts: 10.0.0.5
+  become: yes  # Use 'become' to execute tasks with elevated privileges
+  tasks:
+    
+    # Install OpenJDK (Java)
+    - name: Install Java
+      package:
+        name: java-1.8.0-openjdk
+        state: present
+
+    # Install Apache HTTP Server
+    - name: Install Apache HTTP Server
+      package:
+        name: httpd
+        state: present
+
+    # Start Apache HTTP Server if it's not running
+    - name: Ensure Apache is running and enabled
+      service:
+        name: httpd
+        state: started
+        enabled: yes

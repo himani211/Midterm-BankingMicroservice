@@ -1,0 +1,80 @@
+---
+- name: Install Docker and Docker Compose on Rocky Linux 9
+  hosts: localhost  # Run locally
+  become: true  # Run commands with sudo privileges
+  tasks:
+
+    - name: Update dnf cache
+      dnf:
+        name: '*'
+        state: latest
+        update_cache: yes
+
+    - name: Install required dependencies for Docker
+      dnf:
+        name:
+          - dnf-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
+
+    - name: Add Docker repository
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Install Docker packages
+      dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Check Docker version
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Print Docker version
+      debug:
+        msg: "Docker version installed: {{ docker_version.stdout }}"
+
+    - name: Get system architecture and OS type for Docker Compose
+      shell: "echo docker-compose-$(uname -s)-$(uname -m)"
+      register: docker_compose_binary
+
+    - name: Install Docker Compose (latest version)
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/1.29.2/{{ docker_compose_binary.stdout }}"
+        dest: /usr/local/bin/docker-compose
+        mode: 'u+x'
+
+    - name: Verify if Docker Compose binary exists
+      stat:
+        path: /usr/local/bin/docker-compose
+      register: docker_compose_stat
+
+    - name: Print Docker Compose binary stats
+      debug:
+        msg: "Docker Compose binary exists: {{ docker_compose_stat.stat.exists }}"
+
+    - name: Ensure Docker Compose is executable
+      command: chmod +x /usr/local/bin/docker-compose
+      when: docker_compose_stat.stat.exists
+
+    - name: Verify Docker Compose installation
+      command: /usr/local/bin/docker-compose --version
+      register: docker_compose_version
+      changed_when: false
+
+    - name: Print Docker Compose version
+      debug:
+        msg: "Docker Compose version installed: {{ docker_compose_version.stdout }}"
