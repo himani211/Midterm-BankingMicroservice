@@ -1,6 +1,6 @@
 ---
 
-- name: Install Docker on CentOS
+- name: Install Docker on Rocky
 
   hosts: controller
 
@@ -11,7 +11,7 @@
     - name: Add Docker repository
 
       command: dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
- 
+
     - name: Install Docker packages
 
       dnf:
@@ -27,7 +27,7 @@
           - docker-compose-plugin
 
         state: present
- 
+
     - name: Start Docker service
 
       systemd:
@@ -35,7 +35,7 @@
         name: docker
 
         state: started
- 
+
     - name: Enable Docker service
 
       systemd:
@@ -43,7 +43,7 @@
         name: docker
 
         enabled: true
- 
+
     - name: Check Docker service status
 
       command: systemctl status docker
@@ -51,7 +51,7 @@
       register: docker_status
 
       ignore_errors: yes
- 
+
     - name: Print Docker service status
 
       debug:
